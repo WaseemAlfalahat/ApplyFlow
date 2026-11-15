@@ -12,6 +12,7 @@ const STATUSES = [
 ] as const
 
 type Status = (typeof STATUSES)[number]
+type SortMode = 'newest' | 'oldest' | 'deadline' | 'company'
 
 type Company = {
   id: string
@@ -34,6 +35,17 @@ type Props = {
   onChanged: () => Promise<void>
 }
 
+// Escape CSV values, including potential spreadsheet formulas.
+function csvCell(value: string | null | undefined): string {
+  const raw = value ?? ''
+
+const safe = /^[=+\-@]/.test(raw.trimStart())
+    ? "'" + raw
+    : raw
+
+  return `"${safe.replace(/"/g, '""')}"`
+}
+
 export default function ApplicationsPanel({ onChanged }: Props) {
   const [applications, setApplications] = useState<JobApplication[]>([])
   const [companies, setCompanies] = useState<Company[]>([])
@@ -48,6 +60,7 @@ export default function ApplicationsPanel({ onChanged }: Props) {
 
   const [search, setSearch] = useState('')
   const [filter, setFilter] = useState('All')
+  const [sortBy, setSortBy] = useState<SortMode>('newest')
 
   const [companyId, setCompanyId] = useState('')
   const [jobTitle, setJobTitle] = useState('')
@@ -62,12 +75,13 @@ export default function ApplicationsPanel({ onChanged }: Props) {
   const busy = saving || deletingId !== null || loadingCompanies
 
   useEffect(() => {
-    let active = true
+    const controller = new AbortController()
 
     async function loadApplications() {
       try {
         const response = await fetch('/api/applications', {
           credentials: 'include',
+          signal: controller.signal,
         })
 
         if (!response.ok) {
@@ -76,21 +90,20 @@ export default function ApplicationsPanel({ onChanged }: Props) {
 
         const data: JobApplication[] = await response.json()
 
-        if (active) setApplications(data)
+        if (!controller.signal.aborted) {
+          setApplications(data)
+        }
       } catch {
-        if (active) {
+        if (!controller.signal.aborted) {
           setError('Unable to load your job applications.')
         }
       } finally {
-        if (active) setLoading(false)
+        if (!controller.signal.aborted) setLoading(false)
       }
     }
 
     void loadApplications()
-
-    return () => {
-      active = false
-    }
+    return () => controller.abort()
   }, [])
 
   function resetForm() {
@@ -140,7 +153,6 @@ export default function ApplicationsPanel({ onChanged }: Props) {
       )
       setAppliedOn(application?.appliedOn ?? '')
       setDeadlineDate(application?.deadlineDate ?? '')
-
       setShowForm(true)
     } catch (err) {
       setError(
@@ -156,7 +168,7 @@ export default function ApplicationsPanel({ onChanged }: Props) {
       await onChanged()
     } catch {
       setNotice(
-        'Changes saved, but dashboard statistics need a refresh.'
+        'Changes saved, but dashboard statistics need refreshing.'
       )
     }
   }
@@ -169,8 +181,7 @@ export default function ApplicationsPanel({ onChanged }: Props) {
       return
     }
 
-    const currentEditingId = editingId
-    const isEditing = currentEditingId !== null
+    const isEditing = editingId !== null
 
     setSaving(true)
     setError('')
@@ -179,7 +190,7 @@ export default function ApplicationsPanel({ onChanged }: Props) {
     try {
       const response = await fetch(
         isEditing
-          ? `/api/applications/${currentEditingId}`
+          ? `/api/applications/${editingId}`
           : '/api/applications',
         {
           method: isEditing ? 'PUT' : 'POST',
@@ -214,10 +225,7 @@ export default function ApplicationsPanel({ onChanged }: Props) {
           : [saved, ...current]
       )
 
-      setSearch('')
-      setFilter('All')
       resetForm()
-
       setNotice(
         isEditing
           ? 'Application updated successfully!'
@@ -277,6 +285,7 @@ export default function ApplicationsPanel({ onChanged }: Props) {
     }
   }
 
+  // Search and status filtering
   const filtered = applications.filter((application) => {
     const query = search.trim().toLowerCase()
 
@@ -289,6 +298,83 @@ export default function ApplicationsPanel({ onChanged }: Props) {
 
     return matchesSearch && matchesStatus
   })
+
+  // Sort without mutating React state
+  const visibleApplications = [...filtered].sort((a, b) => {
+    if (sortBy === 'oldest') {
+      return a.createdAtUtc.localeCompare(b.createdAtUtc)
+    }
+
+    if (sortBy === 'deadline') {
+      const dateA = a.deadlineDate ?? '9999-12-31'
+      const dateB = b.deadlineDate ?? '9999-12-31'
+
+      return (
+        dateA.localeCompare(dateB) ||
+        b.createdAtUtc.localeCompare(a.createdAtUtc)
+      )
+    }
+
+    if (sortBy === 'company') {
+      return (
+        a.companyName.localeCompare(b.companyName) ||
+        a.jobTitle.localeCompare(b.jobTitle)
+      )
+    }
+
+    return b.createdAtUtc.localeCompare(a.createdAtUtc)
+  })
+
+  // Export the currently visible applications to CSV
+  function exportCsv() {
+    if (visibleApplications.length === 0) return
+
+    const headers = [
+      'Company',
+      'Job Title',
+      'Status',
+      'Applied On',
+      'Deadline',
+      'Job URL',
+    ]
+
+    const rows = visibleApplications.map((app) => [
+      app.companyName,
+      app.jobTitle,
+      app.status,
+      app.appliedOn,
+      app.deadlineDate,
+      app.jobUrl,
+    ])
+
+    const csv = [headers, ...rows]
+      .map((row) => row.map(csvCell).join(','))
+      .join('\r\n')
+
+    const blob = new Blob(
+      ['\uFEFF', csv],
+      { type: 'text/csv;charset=utf-8;' }
+    )
+
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+
+    link.href = url
+    link.download =
+      `applyflow-applications-${new Date().toISOString().slice(0, 10)}.csv`
+
+    document.body.appendChild(link)
+    link.click()
+    link.remove()
+
+    window.setTimeout(() => {
+      URL.revokeObjectURL(url)
+    }, 1000)
+
+    setNotice(
+      `Exported ${visibleApplications.length} application(s) to CSV.`
+    )
+  }
 
   return (
     <section className="applications-panel">
@@ -452,11 +538,33 @@ export default function ApplicationsPanel({ onChanged }: Props) {
             </option>
           ))}
         </select>
+
+        <select
+          aria-label="Sort applications"
+          value={sortBy}
+          onChange={(event) =>
+            setSortBy(event.target.value as SortMode)
+          }
+        >
+          <option value="newest">Newest First</option>
+          <option value="oldest">Oldest First</option>
+          <option value="deadline">Deadline Soonest</option>
+          <option value="company">Company A–Z</option>
+        </select>
+
+        <button
+          type="button"
+          className="export-csv-button"
+          onClick={exportCsv}
+          disabled={loading || visibleApplications.length === 0}
+        >
+          Export CSV
+        </button>
       </div>
 
       <p className="application-result-count">
-        {filtered.length} application
-        {filtered.length === 1 ? '' : 's'} shown
+        {visibleApplications.length} application
+        {visibleApplications.length === 1 ? '' : 's'} shown
       </p>
 
       {loading ? (
@@ -468,13 +576,13 @@ export default function ApplicationsPanel({ onChanged }: Props) {
           <h3>No applications yet</h3>
           <p>Add your first job application.</p>
         </div>
-      ) : filtered.length === 0 ? (
+      ) : visibleApplications.length === 0 ? (
         <div className="application-empty">
           No applications match your search.
         </div>
       ) : (
         <div className="application-list">
-          {filtered.map((application) => {
+          {visibleApplications.map((application) => {
             const safeUrl =
               application.jobUrl &&
               /^https?:\/\//i.test(application.jobUrl)

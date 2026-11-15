@@ -2,6 +2,8 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import CompaniesPanel from './components/CompaniesPanel'
 
+import ApplicationDetailsPanel from './components/ApplicationDetailsPanel'
+
 import ApplicationsPanel from './components/ApplicationsPanel'
 import DeadlinesPanel from './components/DeadlinesPanel'
 import ApplicationAnalytics from './components/ApplicationAnalytics'
@@ -327,7 +329,9 @@ const [deadlineRefreshKey, setDeadlineRefreshKey] = useState(0)
 />
 
           {/* Companies Management */}
-          <CompaniesPanel onChanged={loadAccount} />
+
+<ApplicationDetailsPanel />
+<CompaniesPanel onChanged={loadAccount} />
 
           {/* Backend Connection Information */}
           <div className="next-card">

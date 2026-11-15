@@ -135,6 +135,9 @@ namespace ApplyFlow.Api.Data.Migrations
                     b.Property<DateOnly?>("DeadlineDate")
                         .HasColumnType("date");
 
+                    b.Property<DateOnly?>("FollowUpDate")
+                        .HasColumnType("date");
+
                     b.Property<string>("JobTitle")
                         .IsRequired()
                         .HasMaxLength(200)
@@ -143,6 +146,18 @@ namespace ApplyFlow.Api.Data.Migrations
                     b.Property<string>("JobUrl")
                         .HasMaxLength(2048)
                         .HasColumnType("nvarchar(2048)");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(4000)
+                        .HasColumnType("nvarchar(4000)");
+
+                    b.Property<string>("RecruiterEmail")
+                        .HasMaxLength(320)
+                        .HasColumnType("nvarchar(320)");
+
+                    b.Property<string>("RecruiterName")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
 
                     b.Property<string>("Status")
                         .IsRequired()

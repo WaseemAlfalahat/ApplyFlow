@@ -1051,3 +1051,506 @@
     padding: 16px;
   }
 }
+
+/* Milestone 07: Sorting and CSV Export */
+
+.application-toolbar {
+  display: grid;
+  grid-template-columns:
+    minmax(0, 1fr) 165px 170px auto;
+  gap: 12px;
+  align-items: stretch;
+}
+
+.export-csv-button {
+  background: #30344b;
+  color: #e3e0ff;
+  border: 1px solid #595681;
+  border-radius: 9px;
+  padding: 12px 18px;
+  font-size: 13px;
+  font-weight: 650;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.export-csv-button:hover {
+  background: #454365;
+}
+
+.export-csv-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+@media (max-width: 1050px) {
+  .application-toolbar {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 650px) {
+  .application-toolbar {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Milestone 07: Application Notes & Contacts */
+
+.application-details-panel {
+  margin-top: 28px;
+  background: #1a1d28;
+  border: 1px solid #303344;
+  border-radius: 16px;
+  padding: 28px;
+}
+
+.application-details-heading {
+  margin-bottom: 25px;
+}
+
+.application-details-heading h2 {
+  font-size: 21px;
+  margin: 0 0 8px;
+}
+
+.application-details-heading p {
+  color: #969eaf;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.application-details-panel label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.application-details-panel input,
+.application-details-panel select,
+.application-details-panel textarea {
+  display: block;
+  width: 100%;
+  padding: 13px;
+  margin-bottom: 20px;
+  background: #1e2230;
+  border: 1px solid #3a4054;
+  border-radius: 9px;
+  color: white;
+  font: inherit;
+  outline: none;
+}
+
+.application-details-panel textarea {
+  resize: vertical;
+  line-height: 1.6;
+}
+
+.application-details-panel input:focus,
+.application-details-panel select:focus,
+.application-details-panel textarea:focus {
+  border-color: #928cff;
+}
+
+.application-details-form {
+  padding: 22px;
+  background: #141722;
+  border: 1px solid #343849;
+  border-radius: 12px;
+}
+
+.application-details-form .submit-button {
+  justify-content: center;
+}
+/* Saved details preview */
+
+.application-details-preview {
+  margin-top: 24px;
+  padding: 22px;
+  background: #141722;
+  border: 1px solid #343849;
+  border-radius: 12px;
+}
+
+.application-details-preview h3 {
+  margin: 0 0 16px;
+  font-size: 18px;
+}
+
+.details-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 14px;
+  margin-bottom: 18px;
+}
+
+.detail-card {
+  background: #1e2230;
+  border: 1px solid #3a4054;
+  border-radius: 10px;
+  padding: 14px;
+}
+
+.detail-card span,
+.detail-notes-card span {
+  display: block;
+  font-size: 12px;
+  color: #969eaf;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.detail-card strong {
+  font-size: 15px;
+  color: #ffffff;
+  font-weight: 600;
+}
+
+.detail-notes-card {
+  background: #1e2230;
+  border: 1px solid #3a4054;
+  border-radius: 10px;
+  padding: 16px;
+}
+
+.detail-notes-card p {
+  margin: 0;
+  color: #ffffff;
+  line-height: 1.7;
+  white-space: pre-wrap;
+}
+
+/* ApplyFlow — Redesigned Application Notes */
+
+.notes-panel {
+  margin-top: 28px;
+  padding: 28px;
+  background: #1a1d28;
+  border: 1px solid #303344;
+  border-radius: 16px;
+}
+
+.notes-heading,
+.notes-detail-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.notes-heading {
+  margin-bottom: 25px;
+}
+
+.notes-heading h2 {
+  margin: 0 0 8px;
+  font-size: 21px;
+}
+
+.notes-heading p,
+.notes-detail-heading p {
+  margin: 0;
+  color: #969eaf;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.notes-primary-button {
+  flex-shrink: 0;
+  padding: 12px 18px;
+  color: white;
+  background: #736bff;
+  border: none;
+  border-radius: 9px;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.notes-primary-button:hover {
+  background: #625af0;
+}
+
+.notes-secondary-button {
+  flex-shrink: 0;
+  padding: 10px 14px;
+  color: #d7d4ff;
+  background: #30344b;
+  border: 1px solid #484e6a;
+  border-radius: 9px;
+  font-size: 12px;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.notes-secondary-button:hover {
+  background: #444964;
+}
+
+.notes-primary-button:disabled,
+.notes-secondary-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.notes-layout {
+  display: grid;
+  grid-template-columns: minmax(220px, 0.85fr) minmax(0, 2fr);
+  gap: 18px;
+}
+
+.notes-sidebar,
+.notes-main {
+  min-width: 0;
+  padding: 20px;
+  background: #141722;
+  border: 1px solid #343849;
+  border-radius: 12px;
+}
+
+.notes-sidebar-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 17px;
+  gap: 10px;
+}
+
+.notes-sidebar-heading strong {
+  font-size: 14px;
+}
+
+.notes-sidebar-heading span {
+  padding: 5px 9px;
+  color: #c6c1ff;
+  background: #302d4d;
+  border-radius: 7px;
+  font-size: 12px;
+}
+
+.notes-list {
+  display: grid;
+  gap: 10px;
+}
+
+.notes-list-item {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  width: 100%;
+  text-align: left;
+  gap: 8px;
+  padding: 17px;
+  background: #1e2230;
+  border: 1px solid #343849;
+  border-radius: 10px;
+  color: #fff;
+  cursor: pointer;
+}
+
+.notes-list-item:hover {
+  border-color: #6961c9;
+}
+
+.notes-list-item-active {
+  background: #282642;
+  border-color: #8179ff;
+}
+
+.notes-list-company,
+.notes-eyebrow {
+  color: #b2aaff;
+  font-size: 12px;
+  font-weight: 650;
+}
+
+.notes-list-item strong {
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.notes-list-preview {
+  max-width: 100%;
+  color: #a0a7b8;
+  font-size: 12px;
+  line-height: 1.5;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow-wrap: anywhere;
+}
+
+.notes-list-date {
+  color: #e1c38c;
+  font-size: 11px;
+}
+
+.notes-sidebar-empty,
+.notes-muted {
+  color: #969eaf;
+  font-size: 13px;
+  line-height: 1.7;
+}
+
+.notes-detail-heading {
+  margin-bottom: 24px;
+}
+
+.notes-detail-heading h3 {
+  margin: 8px 0 5px;
+  font-size: 20px;
+  line-height: 1.4;
+}
+
+.notes-info-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.notes-info-card {
+  min-width: 0;
+  padding: 15px;
+  background: #1e2230;
+  border: 1px solid #343849;
+  border-radius: 10px;
+}
+
+.notes-info-card span {
+  display: block;
+  margin-bottom: 9px;
+  color: #969eaf;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.notes-info-card strong,
+.notes-info-card a {
+  color: #f5f6fb;
+  font-size: 13px;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.notes-info-card a {
+  color: #b2aaff;
+  text-decoration: none;
+}
+
+.notes-body {
+  padding: 21px;
+  background: #1e2230;
+  border: 1px solid #343849;
+  border-radius: 10px;
+}
+
+.notes-body h4 {
+  margin: 0 0 14px;
+  font-size: 14px;
+}
+
+.notes-body p {
+  margin: 0;
+  color: #d5d9e6;
+  line-height: 1.8;
+  font-size: 13px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.notes-editor label {
+  display: block;
+  margin: 0 0 8px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.notes-editor input,
+.notes-editor select,
+.notes-editor textarea {
+  width: 100%;
+  padding: 13px;
+  margin-bottom: 20px;
+  background: #1e2230;
+  border: 1px solid #3a4054;
+  border-radius: 9px;
+  color: #fff;
+  font: inherit;
+  outline: none;
+}
+
+.notes-editor input:focus,
+.notes-editor select:focus,
+.notes-editor textarea:focus {
+  border-color: #928cff;
+}
+
+.notes-editor textarea {
+  resize: vertical;
+  line-height: 1.6;
+}
+
+.notes-editor-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.notes-editor input[type="date"] {
+  color-scheme: dark;
+}
+
+.notes-save-button {
+  width: 100%;
+}
+
+.notes-empty {
+  padding: 45px 20px;
+  text-align: center;
+}
+
+.notes-empty h3 {
+  font-size: 17px;
+}
+
+.notes-empty p {
+  color: #969eaf;
+  font-size: 13px;
+  line-height: 1.7;
+}
+
+.notes-success {
+  color: #83e0b6;
+  font-size: 13px;
+  margin-bottom: 16px;
+}
+
+@media (max-width: 850px) {
+  .notes-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .notes-info-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 550px) {
+  .notes-panel {
+    padding: 16px;
+  }
+
+  .notes-heading,
+  .notes-detail-heading {
+    flex-direction: column;
+  }
+
+  .notes-editor-grid {
+    grid-template-columns: 1fr;
+  }
+}
