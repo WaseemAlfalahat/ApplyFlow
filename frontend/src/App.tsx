@@ -1,7 +1,10 @@
 
 import { useEffect, useState, type FormEvent } from 'react'
 import CompaniesPanel from './components/CompaniesPanel'
+
 import ApplicationsPanel from './components/ApplicationsPanel'
+import DeadlinesPanel from './components/DeadlinesPanel'
+import ApplicationAnalytics from './components/ApplicationAnalytics'
 import './App.css'
 
 type Mode = 'login' | 'register'
@@ -38,7 +41,9 @@ function App() {
   const [confirmPassword, setConfirmPassword] = useState('')
 
   const [profile, setProfile] = useState<Profile | null>(null)
-  const [dashboard, setDashboard] = useState<Dashboard | null>(null)
+
+const [dashboard, setDashboard] = useState<Dashboard | null>(null)
+const [deadlineRefreshKey, setDeadlineRefreshKey] = useState(0)
 
   const [checking, setChecking] = useState(true)
   const [busy, setBusy] = useState(false)
@@ -310,7 +315,16 @@ function App() {
           </div>
 
           {/* Job Applications Tracker */}
-          <ApplicationsPanel onChanged={loadAccount} />
+
+<DeadlinesPanel key={deadlineRefreshKey} />
+<ApplicationAnalytics key={`analytics-${deadlineRefreshKey}`} />
+
+<ApplicationsPanel
+  onChanged={async () => {
+    await loadAccount()
+    setDeadlineRefreshKey((current) => current + 1)
+  }}
+/>
 
           {/* Companies Management */}
           <CompaniesPanel onChanged={loadAccount} />

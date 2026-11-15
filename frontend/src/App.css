@@ -892,3 +892,162 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* ApplyFlow Application Analytics */
+
+.analytics-panel {
+  margin-top: 28px;
+  padding: 28px;
+  background: #1a1d28;
+  border: 1px solid #303344;
+  border-radius: 16px;
+}
+
+.analytics-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin-bottom: 25px;
+}
+
+.analytics-heading h2 {
+  font-size: 21px;
+  margin: 0 0 8px;
+}
+
+.analytics-heading p,
+.analytics-distribution > p {
+  color: #969eaf;
+  font-size: 13px;
+  margin: 0;
+}
+
+.analytics-total {
+  color: #b5afff;
+  background: #302d4d;
+  padding: 9px 13px;
+  border-radius: 9px;
+  font-size: 12px;
+}
+
+.analytics-highlights {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 15px;
+  margin-bottom: 28px;
+}
+
+.analytics-highlight {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 22px;
+  background: #141722;
+  border: 1px solid #343849;
+  border-radius: 12px;
+}
+
+.analytics-highlight span {
+  color: #a5adbf;
+  font-size: 13px;
+}
+
+.analytics-highlight strong {
+  color: #f5f6fb;
+  font-size: 38px;
+}
+
+.analytics-highlight small {
+  color: #969eaf;
+  line-height: 1.5;
+}
+
+.analytics-distribution {
+  padding: 24px;
+  background: #141722;
+  border: 1px solid #343849;
+  border-radius: 12px;
+}
+
+.analytics-distribution h3 {
+  margin: 0 0 8px;
+  font-size: 16px;
+}
+
+.analytics-bars {
+  display: grid;
+  gap: 19px;
+  margin-top: 26px;
+}
+
+.analytics-bar-label {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  color: #d5d9e6;
+  font-size: 13px;
+  margin-bottom: 9px;
+}
+
+.analytics-progress {
+  display: block;
+  width: 100%;
+  height: 10px;
+  border: 0;
+  border-radius: 10px;
+  overflow: hidden;
+  background: #292d40;
+  appearance: none;
+}
+
+.analytics-progress::-webkit-progress-bar {
+  background: #292d40;
+  border-radius: 10px;
+}
+
+.analytics-progress::-webkit-progress-value {
+  background: var(--bar-color, #736bff);
+  border-radius: 10px;
+}
+
+.analytics-progress::-moz-progress-bar {
+  background: var(--bar-color, #736bff);
+  border-radius: 10px;
+}
+
+.analytics-progress--draft { --bar-color: #9398b1; }
+.analytics-progress--applied { --bar-color: #669cff; }
+.analytics-progress--screening { --bar-color: #a78bfa; }
+.analytics-progress--interview { --bar-color: #e9bd70; }
+.analytics-progress--offer { --bar-color: #65d9a8; }
+.analytics-progress--rejected { --bar-color: #e77c91; }
+.analytics-progress--withdrawn { --bar-color: #898e9e; }
+
+.analytics-message {
+  padding: 28px 12px;
+  text-align: center;
+  color: #969eaf;
+}
+
+.analytics-footnote {
+  color: #858da1;
+  font-size: 11px;
+  line-height: 1.6;
+  margin: 20px 0 0;
+}
+
+@media (max-width: 650px) {
+  .analytics-panel {
+    padding: 18px;
+  }
+
+  .analytics-highlights {
+    grid-template-columns: 1fr;
+  }
+
+  .analytics-distribution {
+    padding: 16px;
+  }
+}
