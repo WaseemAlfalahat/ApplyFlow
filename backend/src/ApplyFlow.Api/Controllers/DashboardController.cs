@@ -1,6 +1,7 @@
 
 using ApplyFlow.Api.Data;
 using ApplyFlow.Api.Models;
+using ApplyFlow.Api.Models.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -45,10 +46,18 @@ public class DashboardController : ControllerBase
                 application => application.UserId == userId,
                 cancellationToken);
 
+        var rejectedApplications = await _db.JobApplications
+            .CountAsync(
+                application =>
+                    application.UserId == userId &&
+                    application.Status == ApplicationStatus.Rejected,
+                cancellationToken);
+
         return Ok(new
         {
             totalCompanies,
-            totalApplications
+            totalApplications,
+            rejectedApplications
         });
     }
 }
