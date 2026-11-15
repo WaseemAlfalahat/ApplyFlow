@@ -1,6 +1,10 @@
 
 import { useEffect, useState, type FormEvent } from 'react'
-
+import {
+  csvCell,
+  filterAndSortApplications,
+  type SortMode,
+} from '../utils/applicationUtils'
 const STATUSES = [
   'Draft',
   'Applied',
@@ -12,7 +16,6 @@ const STATUSES = [
 ] as const
 
 type Status = (typeof STATUSES)[number]
-type SortMode = 'newest' | 'oldest' | 'deadline' | 'company'
 
 type Company = {
   id: string
@@ -35,16 +38,6 @@ type Props = {
   onChanged: () => Promise<void>
 }
 
-// Escape CSV values, including potential spreadsheet formulas.
-function csvCell(value: string | null | undefined): string {
-  const raw = value ?? ''
-
-const safe = /^[=+\-@]/.test(raw.trimStart())
-    ? "'" + raw
-    : raw
-
-  return `"${safe.replace(/"/g, '""')}"`
-}
 
 export default function ApplicationsPanel({ onChanged }: Props) {
   const [applications, setApplications] = useState<JobApplication[]>([])
@@ -285,45 +278,14 @@ export default function ApplicationsPanel({ onChanged }: Props) {
     }
   }
 
-  // Search and status filtering
-  const filtered = applications.filter((application) => {
-    const query = search.trim().toLowerCase()
+  
+  const visibleApplications = filterAndSortApplications(
+    applications,
+    search,
+    filter,
+    sortBy
+  )
 
-    const matchesSearch =
-      application.jobTitle.toLowerCase().includes(query) ||
-      application.companyName.toLowerCase().includes(query)
-
-    const matchesStatus =
-      filter === 'All' || application.status === filter
-
-    return matchesSearch && matchesStatus
-  })
-
-  // Sort without mutating React state
-  const visibleApplications = [...filtered].sort((a, b) => {
-    if (sortBy === 'oldest') {
-      return a.createdAtUtc.localeCompare(b.createdAtUtc)
-    }
-
-    if (sortBy === 'deadline') {
-      const dateA = a.deadlineDate ?? '9999-12-31'
-      const dateB = b.deadlineDate ?? '9999-12-31'
-
-      return (
-        dateA.localeCompare(dateB) ||
-        b.createdAtUtc.localeCompare(a.createdAtUtc)
-      )
-    }
-
-    if (sortBy === 'company') {
-      return (
-        a.companyName.localeCompare(b.companyName) ||
-        a.jobTitle.localeCompare(b.jobTitle)
-      )
-    }
-
-    return b.createdAtUtc.localeCompare(a.createdAtUtc)
-  })
 
   // Export the currently visible applications to CSV
   function exportCsv() {
