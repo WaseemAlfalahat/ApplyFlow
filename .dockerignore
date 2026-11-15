@@ -1,0 +1,13 @@
+
+.git
+**/bin
+**/obj
+**/node_modules
+frontend/dist
+backend/src/ApplyFlow.Api/wwwroot
+publish
+**/.env
+**/.env.*
+**/secrets.json
+**/appsettings.Development.local.json
+**/.DS_Store
