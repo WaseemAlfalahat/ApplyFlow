@@ -56,7 +56,8 @@ if (app.Environment.IsDevelopment())
 
 // HTTP pipeline
 app.UseHttpsRedirection();
-
+app.UseDefaultFiles();
+app.UseStaticFiles();
 app.UseAuthentication();
 app.UseAuthorization();
 
@@ -76,5 +77,5 @@ app.MapPost("/api/auth/logout",
     .RequireAuthorization();
 
 app.MapControllers();
-
+ app.MapFallbackToFile("index.html");
 app.Run();
