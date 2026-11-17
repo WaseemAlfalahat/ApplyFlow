@@ -1,12 +1,12 @@
 
 import { useEffect, useState, type FormEvent } from 'react'
-import CompaniesPanel from './components/CompaniesPanel'
-
-import ApplicationDetailsPanel from './components/ApplicationDetailsPanel'
 
 import ApplicationsPanel from './components/ApplicationsPanel'
+import ApplicationDetailsPanel from './components/ApplicationDetailsPanel'
 import DeadlinesPanel from './components/DeadlinesPanel'
 import ApplicationAnalytics from './components/ApplicationAnalytics'
+import DashboardSpotlight from './components/DashboardSpotlight'
+
 import './App.css'
 
 type Mode = 'login' | 'register'
@@ -43,15 +43,13 @@ function App() {
   const [confirmPassword, setConfirmPassword] = useState('')
 
   const [profile, setProfile] = useState<Profile | null>(null)
-
-const [dashboard, setDashboard] = useState<Dashboard | null>(null)
-const [deadlineRefreshKey, setDeadlineRefreshKey] = useState(0)
+  const [dashboard, setDashboard] = useState<Dashboard | null>(null)
+  const [refreshVersion, setRefreshVersion] = useState(0)
 
   const [checking, setChecking] = useState(true)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
 
-  // Load account information and dashboard statistics
   async function loadAccount(): Promise<void> {
     const accountResponse = await fetch('/api/auth/manage/info', {
       credentials: 'include',
@@ -68,7 +66,7 @@ const [deadlineRefreshKey, setDeadlineRefreshKey] = useState(0)
     })
 
     if (!dashboardResponse.ok) {
-      throw new Error('Unable to load your dashboard.')
+      throw new Error('Unable to load dashboard information.')
     }
 
     const stats: Dashboard = await dashboardResponse.json()
@@ -77,7 +75,6 @@ const [deadlineRefreshKey, setDeadlineRefreshKey] = useState(0)
     setDashboard(stats)
   }
 
-  // Restore an existing session when the website loads
   useEffect(() => {
     let active = true
 
@@ -90,12 +87,13 @@ const [deadlineRefreshKey, setDeadlineRefreshKey] = useState(0)
         if (response.ok) {
           const account: Profile = await response.json()
 
-          const summary = await fetch('/api/dashboard/summary', {
-            credentials: 'include',
-          })
+          const summaryResponse = await fetch(
+            '/api/dashboard/summary',
+            { credentials: 'include' }
+          )
 
-          if (summary.ok) {
-            const stats: Dashboard = await summary.json()
+          if (summaryResponse.ok) {
+            const stats: Dashboard = await summaryResponse.json()
 
             if (active) {
               setProfile(account)
@@ -104,11 +102,9 @@ const [deadlineRefreshKey, setDeadlineRefreshKey] = useState(0)
           }
         }
       } catch {
-        // No active session or backend temporarily unavailable
+        // No existing session or backend unavailable
       } finally {
-        if (active) {
-          setChecking(false)
-        }
+        if (active) setChecking(false)
       }
     }
 
@@ -119,7 +115,6 @@ const [deadlineRefreshKey, setDeadlineRefreshKey] = useState(0)
     }
   }, [])
 
-  // Handle registration and login
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     setError('')
@@ -138,37 +133,37 @@ const [deadlineRefreshKey, setDeadlineRefreshKey] = useState(0)
 
     try {
       if (mode === 'register') {
-        const registration = await fetch('/api/auth/register', {
+        const registrationResponse = await fetch(
+          '/api/auth/register',
+          {
+            method: 'POST',
+            credentials: 'include',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ email, password }),
+          }
+        )
+
+        if (!registrationResponse.ok) {
+          throw new Error(await getError(registrationResponse))
+        }
+      }
+
+      const loginResponse = await fetch(
+        '/api/auth/login?useCookies=true',
+        {
           method: 'POST',
           credentials: 'include',
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({
-            email,
-            password,
-          }),
-        })
-
-        if (!registration.ok) {
-          throw new Error(await getError(registration))
+          body: JSON.stringify({ email, password }),
         }
-      }
+      )
 
-      const login = await fetch('/api/auth/login?useCookies=true', {
-        method: 'POST',
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          email,
-          password,
-        }),
-      })
-
-      if (!login.ok) {
-        throw new Error(await getError(login))
+      if (!loginResponse.ok) {
+        throw new Error(await getError(loginResponse))
       }
 
       await loadAccount()
@@ -186,7 +181,6 @@ const [deadlineRefreshKey, setDeadlineRefreshKey] = useState(0)
     }
   }
 
-  // Handle logout
   async function handleLogout() {
     setBusy(true)
 
@@ -202,6 +196,7 @@ const [deadlineRefreshKey, setDeadlineRefreshKey] = useState(0)
 
       setProfile(null)
       setDashboard(null)
+      setEmail('')
       setPassword('')
       setConfirmPassword('')
       setError('')
@@ -213,7 +208,6 @@ const [deadlineRefreshKey, setDeadlineRefreshKey] = useState(0)
     }
   }
 
-  // Switch between login and registration
   function switchMode(next: Mode) {
     setMode(next)
     setError('')
@@ -221,7 +215,13 @@ const [deadlineRefreshKey, setDeadlineRefreshKey] = useState(0)
     setConfirmPassword('')
   }
 
-  // Loading screen
+  async function handleApplicationsChanged() {
+    // Refresh the widgets immediately, even if stats fail to reload.
+    setRefreshVersion((current) => current + 1)
+    await loadAccount()
+  }
+
+
   if (checking) {
     return (
       <div className="loading-screen">
@@ -231,12 +231,9 @@ const [deadlineRefreshKey, setDeadlineRefreshKey] = useState(0)
     )
   }
 
-  // Authenticated dashboard
   if (profile) {
     return (
       <div className="dashboard-page">
-
-        {/* Dashboard Header */}
         <header className="dashboard-header">
           <div className="brand">
             <span className="brand-mark">A</span>
@@ -259,105 +256,37 @@ const [deadlineRefreshKey, setDeadlineRefreshKey] = useState(0)
           </div>
         </header>
 
-        {/* Dashboard Main Content */}
         <main className="dashboard-main">
+          <DashboardSpotlight summary={dashboard} />
 
-          <div className="eyebrow">
-            YOUR WORKSPACE
+          <div id="deadlines">
+            <DeadlinesPanel
+              key={`deadlines-${refreshVersion}`}
+            />
           </div>
 
-          <h1>Welcome to ApplyFlow.</h1>
+          <ApplicationAnalytics
+            key={`analytics-${refreshVersion}`}
+          />
 
-          <p className="muted">
-            Your job search, organized in one place.
-          </p>
-
-          {/* Dashboard Statistics */}
-          <div className="stats-grid">
-
-            {/* Total Applications */}
-            <article className="stat-card">
-              <span>Total Applications</span>
-
-              <strong>
-                {dashboard?.totalApplications ?? '—'}
-              </strong>
-
-              <small>
-                Applications in your tracker
-              </small>
-            </article>
-
-            {/* Saved Companies */}
-            <article className="stat-card">
-              <span>Saved Companies</span>
-
-              <strong>
-                {dashboard?.totalCompanies ?? '—'}
-              </strong>
-
-              <small>
-                Companies you're tracking
-              </small>
-            </article>
-
-            {/* Rejections Counter */}
-            <article className="stat-card">
-              <span>Rejections</span>
-
-              <strong>
-                {dashboard?.rejectedApplications ?? '—'}
-              </strong>
-
-              <small>
-                Applications marked as rejected
-              </small>
-            </article>
-
+          <div id="applications">
+            <ApplicationsPanel
+              onChanged={handleApplicationsChanged}
+            />
           </div>
 
-          {/* Job Applications Tracker */}
-
-<DeadlinesPanel key={deadlineRefreshKey} />
-<ApplicationAnalytics key={`analytics-${deadlineRefreshKey}`} />
-
-<ApplicationsPanel
-  onChanged={async () => {
-    await loadAccount()
-    setDeadlineRefreshKey((current) => current + 1)
-  }}
-/>
-
-          {/* Companies Management */}
-
-<ApplicationDetailsPanel />
-<CompaniesPanel onChanged={loadAccount} />
-
-          {/* Backend Connection Information */}
-          <div className="next-card">
-            <h2>Your workspace is connected.</h2>
-
-            <p>
-              Authentication and dashboard data are coming
-              directly from your ASP.NET Core API and Azure SQL.
-            </p>
-
-            <span className="connected">
-              <span className="status-dot" />
-              Backend connected
-            </span>
+          <div id="notes">
+            <ApplicationDetailsPanel
+              key={`notes-${refreshVersion}`}
+            />
           </div>
-
         </main>
       </div>
     )
   }
 
-  // Login and Registration Page
   return (
     <div className="auth-page">
-
-      {/* Left-side introduction */}
       <section className="showcase">
         <div className="brand">
           <span className="brand-mark">A</span>
@@ -401,10 +330,8 @@ const [deadlineRefreshKey, setDeadlineRefreshKey] = useState(0)
         </div>
       </section>
 
-      {/* Login and Registration Form */}
       <main className="auth-main">
         <div className="auth-container">
-
           <div className="mobile-brand">
             <span className="brand-mark">A</span>
             <strong>ApplyFlow</strong>
@@ -426,7 +353,6 @@ const [deadlineRefreshKey, setDeadlineRefreshKey] = useState(0)
               : 'Start organizing your applications today.'}
           </p>
 
-          {/* Login / Registration Tabs */}
           <div className="auth-tabs">
             <button
               type="button"
@@ -446,7 +372,6 @@ const [deadlineRefreshKey, setDeadlineRefreshKey] = useState(0)
           </div>
 
           <form onSubmit={handleSubmit}>
-
             <label htmlFor="email">
               Email address
             </label>
@@ -493,7 +418,7 @@ const [deadlineRefreshKey, setDeadlineRefreshKey] = useState(0)
                 <input
                   id="confirmPassword"
                   type="password"
-                  placeholder="Confirm your password"
+                  placeholder="Confirm password"
                   autoComplete="new-password"
                   value={confirmPassword}
                   onChange={(event) =>
@@ -526,9 +451,10 @@ const [deadlineRefreshKey, setDeadlineRefreshKey] = useState(0)
                   ? 'Sign in to ApplyFlow'
                   : 'Create account'}
 
-              {!busy && <span>→</span>}
+              {!busy && (
+                <span aria-hidden="true">→</span>
+              )}
             </button>
-
           </form>
 
           <p className="switch-text">
@@ -553,10 +479,8 @@ const [deadlineRefreshKey, setDeadlineRefreshKey] = useState(0)
           <p className="auth-footer">
             ApplyFlow · Your applications, your space.
           </p>
-
         </div>
       </main>
-
     </div>
   )
 }

@@ -10,7 +10,7 @@ type JobApplication = {
   deadlineDate: string | null
 }
 
-type DeadlineApplication = JobApplication & {
+type DeadlineApplication = Omit<JobApplication, 'deadlineDate'> & {
   deadlineDate: string
 }
 
@@ -23,14 +23,11 @@ function localDateString(date: Date): string {
 }
 
 function formatDate(value: string): string {
-  return new Date(`${value}T12:00:00`).toLocaleDateString(
-    'en-GB',
-    {
-      day: 'numeric',
-      month: 'short',
-      year: 'numeric',
-    }
-  )
+  return new Date(`${value}T12:00:00`).toLocaleDateString('en-GB', {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+  })
 }
 
 function daysBetween(today: string, deadline: string): number {
@@ -45,19 +42,23 @@ function daysBetween(today: string, deadline: string): number {
 }
 
 export default function DeadlinesPanel() {
-  const [applications, setApplications] =
-    useState<JobApplication[]>([])
-
+  const [applications, setApplications] = useState<JobApplication[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [refreshCount, setRefreshCount] = useState(0)
 
   useEffect(() => {
-    let active = true
+    const controller = new AbortController()
 
     async function loadDeadlines() {
+      setLoading(true)
+      setError('')
+
       try {
         const response = await fetch('/api/applications', {
           credentials: 'include',
+          cache: 'no-store',
+          signal: controller.signal,
         })
 
         if (!response.ok) {
@@ -66,11 +67,11 @@ export default function DeadlinesPanel() {
 
         const data: JobApplication[] = await response.json()
 
-        if (active) {
+        if (!controller.signal.aborted) {
           setApplications(data)
         }
       } catch (err) {
-        if (active) {
+        if (!controller.signal.aborted) {
           setError(
             err instanceof Error
               ? err.message
@@ -78,7 +79,7 @@ export default function DeadlinesPanel() {
           )
         }
       } finally {
-        if (active) {
+        if (!controller.signal.aborted) {
           setLoading(false)
         }
       }
@@ -86,8 +87,18 @@ export default function DeadlinesPanel() {
 
     void loadDeadlines()
 
+    return () => controller.abort()
+  }, [refreshCount])
+
+  useEffect(() => {
+    function refreshOnFocus() {
+      setRefreshCount((current) => current + 1)
+    }
+
+    window.addEventListener('focus', refreshOnFocus)
+
     return () => {
-      active = false
+      window.removeEventListener('focus', refreshOnFocus)
     }
   }, [])
 
@@ -98,20 +109,32 @@ export default function DeadlinesPanel() {
 
   const weekEnd = localDateString(weekEndDate)
 
-  const drafts = applications.filter(
-    (app): app is DeadlineApplication =>
-      app.status === 'Draft' &&
-      typeof app.deadlineDate === 'string' &&
-      /^\d{4}-\d{2}-\d{2}$/.test(app.deadlineDate)
-  )
+  // Include all active application stages, not only Draft.
+  // Rejected and Withdrawn are considered closed.
+  const relevant: DeadlineApplication[] = applications.flatMap((app) => {
+    const date =
+      typeof app.deadlineDate === 'string'
+        ? app.deadlineDate.slice(0, 10)
+        : ''
 
-  const overdue = drafts
+    if (
+      app.status === 'Rejected' ||
+      app.status === 'Withdrawn' ||
+      !/^\d{4}-\d{2}-\d{2}$/.test(date)
+    ) {
+      return []
+    }
+
+    return [{ ...app, deadlineDate: date }]
+  })
+
+  const overdue = relevant
     .filter((app) => app.deadlineDate < today)
     .sort((a, b) =>
       a.deadlineDate.localeCompare(b.deadlineDate)
     )
 
-  const upcoming = drafts
+  const upcoming = relevant
     .filter(
       (app) =>
         app.deadlineDate >= today &&
@@ -139,7 +162,9 @@ export default function DeadlinesPanel() {
       <article className="deadline-item" key={app.id}>
         <div className="deadline-item-info">
           <h3>{app.jobTitle}</h3>
-          <p>{app.companyName}</p>
+          <p>
+            {app.companyName} · {app.status}
+          </p>
           <span>{formatDate(app.deadlineDate)}</span>
         </div>
 
@@ -162,11 +187,20 @@ export default function DeadlinesPanel() {
         <div>
           <h2>Deadlines & Reminders</h2>
           <p>
-            Stay ahead of your upcoming application deadlines.
+            Keep track of important dates across your applications.
           </p>
         </div>
 
-        <span className="deadlines-heading-icon">◷</span>
+        <button
+          type="button"
+          className="app-action-button"
+          onClick={() =>
+            setRefreshCount((current) => current + 1)
+          }
+          disabled={loading}
+        >
+          {loading ? 'Refreshing...' : '↻ Refresh'}
+        </button>
       </div>
 
       {loading ? (
@@ -220,8 +254,8 @@ export default function DeadlinesPanel() {
               <div className="deadlines-empty-icon">✓</div>
               <h3>You're all caught up!</h3>
               <p>
-                No outstanding application deadlines
-                within the next 7 days.
+                No upcoming deadlines within the next 7 days
+                and no overdue dates on active applications.
               </p>
             </div>
           )}
@@ -229,8 +263,9 @@ export default function DeadlinesPanel() {
       )}
 
       <p className="deadlines-footnote">
-        Tracks submission deadlines for Draft applications.
-        Dates are based on your local calendar.
+        Tracks saved dates for active applications.
+        Rejected and withdrawn applications are excluded.
+        These are in-app reminders, not email notifications.
       </p>
     </section>
   )

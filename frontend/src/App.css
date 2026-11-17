@@ -1554,3 +1554,355 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* ApplyFlow — Dashboard Spotlight Redesign */
+
+html {
+  scroll-behavior: smooth;
+}
+
+.dashboard-main {
+  width: min(1200px, calc(100% - 44px));
+  margin: 36px auto 70px;
+}
+
+.af-overview {
+  margin-bottom: 30px;
+}
+
+.af-hero {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) minmax(280px, 0.9fr);
+  align-items: center;
+  gap: 36px;
+  overflow: hidden;
+  padding: clamp(28px, 4vw, 54px);
+  border: 1px solid #4b467b;
+  border-radius: 24px;
+  background:
+    radial-gradient(ellipse at 85% 0%, #574bb850, transparent 47%),
+    radial-gradient(ellipse at 0% 100%, #1c776a29, transparent 43%),
+    linear-gradient(120deg, #211d40, #151927 72%);
+}
+
+.af-hero::after {
+  content: "";
+  position: absolute;
+  width: 270px;
+  height: 270px;
+  right: -115px;
+  top: -130px;
+  border: 1px solid #a6a0ff29;
+  border-radius: 50%;
+  box-shadow:
+    0 0 0 48px #a6a0ff09,
+    0 0 0 95px #a6a0ff05;
+  pointer-events: none;
+}
+
+.af-hero-main,
+.af-focus-card {
+  position: relative;
+  z-index: 1;
+  min-width: 0;
+}
+
+.af-hero-label,
+.af-section-eyebrow {
+  color: #b6afff;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1.7px;
+}
+
+.af-hero-label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.af-live-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #75ebc4;
+  box-shadow: 0 0 16px #75ebc48a;
+}
+
+.af-hero-date {
+  color: #a6acc7;
+  font-size: 13px;
+  margin: 25px 0 6px;
+}
+
+.dashboard-main .af-hero h1 {
+  font-size: clamp(35px, 4.3vw, 58px);
+  line-height: 1.09;
+  letter-spacing: -2px;
+  margin: 12px 0 20px;
+  max-width: 580px;
+}
+
+.af-hero h1 span {
+  display: block;
+  color: #b8b2ff;
+}
+
+.af-hero-description {
+  max-width: 510px;
+  color: #b5bad1;
+  font-size: 14px;
+  line-height: 1.85;
+}
+
+.af-hero-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 30px;
+}
+
+.af-button-primary,
+.af-button-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  min-height: 44px;
+  padding: 12px 18px;
+  border-radius: 11px;
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 750;
+  transition: transform 0.2s, background 0.2s;
+}
+
+.af-button-primary {
+  color: white;
+  background: #786fff;
+  box-shadow: 0 8px 28px #736bff30;
+}
+
+.af-button-secondary {
+  color: #e8e6ff;
+  background: #ffffff0c;
+  border: 1px solid #817d9e6b;
+}
+
+.af-button-primary:hover,
+.af-button-secondary:hover {
+  transform: translateY(-2px);
+}
+
+.af-button-primary:hover {
+  background: #655bf0;
+}
+
+.af-focus-card {
+  padding: 22px;
+  border-radius: 17px;
+  background: #0c1026a6;
+  border: 1px solid #a5a0ee31;
+  backdrop-filter: blur(12px);
+}
+
+.af-focus-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: #b5afff;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1px;
+}
+
+.af-focus-sparkle {
+  color: #81e9c9;
+  font-size: 23px;
+}
+
+.af-focus-card > p {
+  margin: 12px 0 20px;
+  color: #f4f4fb;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.af-focus-card a {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 0;
+  color: #d5d8eb;
+  font-size: 12px;
+  text-decoration: none;
+  border-top: 1px solid #a9a5ff1b;
+}
+
+.af-focus-card a:hover {
+  color: #ada6ff;
+}
+
+.af-focus-card a span:nth-child(2) {
+  flex: 1;
+}
+
+.af-focus-number {
+  color: #82dec4;
+  font-weight: 800;
+  font-size: 11px;
+}
+
+.af-overview-title {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 15px;
+  margin: 34px 0 18px;
+}
+
+.af-overview-title h2 {
+  margin: 7px 0 0;
+  font-size: 22px;
+  letter-spacing: -0.5px;
+}
+
+.af-overview-note {
+  color: #9098ac;
+  font-size: 12px;
+}
+
+.af-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.af-stat-card {
+  --accent: #9c94ff;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 25px;
+  border-radius: 17px;
+  background: linear-gradient(140deg, #202335, #181b27);
+  border: 1px solid #343849;
+  transition: transform 0.2s, border-color 0.2s;
+}
+
+.af-stat-card:hover {
+  transform: translateY(-3px);
+  border-color: var(--accent);
+}
+
+.af-stat-mint {
+  --accent: #78dec0;
+}
+
+.af-stat-rose {
+  --accent: #f0a2b3;
+}
+
+.af-stat-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.af-stat-top > span:first-child {
+  color: #adb5c8;
+  font-size: 13px;
+}
+
+.af-stat-icon {
+  display: grid;
+  place-items: center;
+  width: 35px;
+  height: 35px;
+  border-radius: 10px;
+  background: #ffffff0b;
+  color: var(--accent);
+  font-size: 20px;
+}
+
+.af-stat-card strong {
+  color: #fff;
+  font-size: 45px;
+  letter-spacing: -1.5px;
+  line-height: 1;
+}
+
+.af-stat-card small {
+  color: #8f98ae;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.af-stat-line {
+  height: 3px;
+  width: 68px;
+  margin-top: 9px;
+  border-radius: 20px;
+  background: var(--accent);
+  box-shadow: 0 0 15px var(--accent);
+}
+
+[id="deadlines"],
+[id="applications"],
+[id="notes"] {
+  scroll-margin-top: 24px;
+}
+
+@media (max-width: 950px) {
+  .af-hero {
+    grid-template-columns: 1fr;
+  }
+
+  .af-stats-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 600px) {
+  .dashboard-main {
+    width: calc(100% - 24px);
+    margin: 18px auto 40px;
+  }
+
+  .af-hero {
+    padding: 26px 20px;
+  }
+
+  .dashboard-main .af-hero h1 {
+    font-size: 37px;
+  }
+
+  .af-stats-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .af-overview-title {
+    align-items: start;
+    flex-direction: column;
+  }
+
+  .af-focus-card {
+    padding: 18px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  .af-button-primary,
+  .af-button-secondary,
+  .af-stat-card {
+    transition: none;
+  }
+}

@@ -5,6 +5,7 @@ import {
   filterAndSortApplications,
   type SortMode,
 } from '../utils/applicationUtils'
+
 const STATUSES = [
   'Draft',
   'Applied',
@@ -16,6 +17,8 @@ const STATUSES = [
 ] as const
 
 type Status = (typeof STATUSES)[number]
+
+const NEW_COMPANY = '__new_company__'
 
 type Company = {
   id: string
@@ -38,7 +41,6 @@ type Props = {
   onChanged: () => Promise<void>
 }
 
-
 export default function ApplicationsPanel({ onChanged }: Props) {
   const [applications, setApplications] = useState<JobApplication[]>([])
   const [companies, setCompanies] = useState<Company[]>([])
@@ -55,7 +57,8 @@ export default function ApplicationsPanel({ onChanged }: Props) {
   const [filter, setFilter] = useState('All')
   const [sortBy, setSortBy] = useState<SortMode>('newest')
 
-  const [companyId, setCompanyId] = useState('')
+  const [companyChoice, setCompanyChoice] = useState(NEW_COMPANY)
+  const [newCompanyName, setNewCompanyName] = useState('')
   const [jobTitle, setJobTitle] = useState('')
   const [jobUrl, setJobUrl] = useState('')
   const [status, setStatus] = useState<Status>('Draft')
@@ -96,13 +99,15 @@ export default function ApplicationsPanel({ onChanged }: Props) {
     }
 
     void loadApplications()
+
     return () => controller.abort()
   }, [])
 
   function resetForm() {
     setShowForm(false)
     setEditingId(null)
-    setCompanyId('')
+    setCompanyChoice(NEW_COMPANY)
+    setNewCompanyName('')
     setJobTitle('')
     setJobUrl('')
     setStatus('Draft')
@@ -123,33 +128,28 @@ export default function ApplicationsPanel({ onChanged }: Props) {
       })
 
       if (!response.ok) {
-        throw new Error('Could not load your companies.')
+        throw new Error('Could not load companies.')
       }
 
       const data: Company[] = await response.json()
+
       setCompanies(data)
-
-      if (data.length === 0) {
-        setError('Add a company before creating an application.')
-        return
-      }
-
       setEditingId(application?.id ?? null)
-      setCompanyId(application?.companyId ?? data[0].id)
+      setCompanyChoice(application?.companyId ?? NEW_COMPANY)
+      setNewCompanyName('')
       setJobTitle(application?.jobTitle ?? '')
       setJobUrl(application?.jobUrl ?? '')
       setStatus(
-        application &&
-          STATUSES.includes(application.status as Status)
+        application && STATUSES.includes(application.status as Status)
           ? (application.status as Status)
           : 'Draft'
       )
-      setAppliedOn(application?.appliedOn ?? '')
-      setDeadlineDate(application?.deadlineDate ?? '')
+      setAppliedOn(application?.appliedOn?.slice(0, 10) ?? '')
+      setDeadlineDate(application?.deadlineDate?.slice(0, 10) ?? '')
       setShowForm(true)
     } catch (err) {
       setError(
-        err instanceof Error ? err.message : 'Something went wrong.'
+        err instanceof Error ? err.message : 'Could not open the form.'
       )
     } finally {
       setLoadingCompanies(false)
@@ -160,9 +160,7 @@ export default function ApplicationsPanel({ onChanged }: Props) {
     try {
       await onChanged()
     } catch {
-      setNotice(
-        'Changes saved, but dashboard statistics need refreshing.'
-      )
+      setNotice('Saved successfully. Refresh the page to update all widgets.')
     }
   }
 
@@ -174,6 +172,11 @@ export default function ApplicationsPanel({ onChanged }: Props) {
       return
     }
 
+    if (companyChoice === NEW_COMPANY && !newCompanyName.trim()) {
+      setError('Enter the company name.')
+      return
+    }
+
     const isEditing = editingId !== null
 
     setSaving(true)
@@ -181,6 +184,54 @@ export default function ApplicationsPanel({ onChanged }: Props) {
     setNotice('')
 
     try {
+      let resolvedCompanyId = companyChoice
+
+      if (companyChoice === NEW_COMPANY) {
+        const cleanName = newCompanyName.trim()
+
+        const existingCompany = companies.find(
+          (company) =>
+            company.name.toLocaleLowerCase() ===
+            cleanName.toLocaleLowerCase()
+        )
+
+        if (existingCompany) {
+          resolvedCompanyId = existingCompany.id
+        } else {
+          const companyResponse = await fetch('/api/companies', {
+            method: 'POST',
+            credentials: 'include',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              name: cleanName,
+              website: null,
+              location: null,
+            }),
+          })
+
+          if (!companyResponse.ok) {
+            throw new Error(
+              `Could not create company (${companyResponse.status}).`
+            )
+          }
+
+          const createdCompany: Company = await companyResponse.json()
+
+          resolvedCompanyId = createdCompany.id
+
+          setCompanies((current) =>
+            [...current, createdCompany].sort((a, b) =>
+              a.name.localeCompare(b.name)
+            )
+          )
+        }
+
+        // If saving the application fails, retry with the saved company.
+        setCompanyChoice(resolvedCompanyId)
+      }
+
       const response = await fetch(
         isEditing
           ? `/api/applications/${editingId}`
@@ -192,7 +243,7 @@ export default function ApplicationsPanel({ onChanged }: Props) {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            companyId,
+            companyId: resolvedCompanyId,
             jobTitle: jobTitle.trim(),
             jobUrl: jobUrl.trim() || null,
             status,
@@ -219,6 +270,7 @@ export default function ApplicationsPanel({ onChanged }: Props) {
       )
 
       resetForm()
+
       setNotice(
         isEditing
           ? 'Application updated successfully!'
@@ -228,7 +280,7 @@ export default function ApplicationsPanel({ onChanged }: Props) {
       await refreshDashboard()
     } catch (err) {
       setError(
-        err instanceof Error ? err.message : 'Something went wrong.'
+        err instanceof Error ? err.message : 'Could not save application.'
       )
     } finally {
       setSaving(false)
@@ -271,14 +323,13 @@ export default function ApplicationsPanel({ onChanged }: Props) {
       await refreshDashboard()
     } catch (err) {
       setError(
-        err instanceof Error ? err.message : 'Something went wrong.'
+        err instanceof Error ? err.message : 'Could not delete application.'
       )
     } finally {
       setDeletingId(null)
     }
   }
 
-  
   const visibleApplications = filterAndSortApplications(
     applications,
     search,
@@ -286,8 +337,6 @@ export default function ApplicationsPanel({ onChanged }: Props) {
     sortBy
   )
 
-
-  // Export the currently visible applications to CSV
   function exportCsv() {
     if (visibleApplications.length === 0) return
 
@@ -329,9 +378,7 @@ export default function ApplicationsPanel({ onChanged }: Props) {
     link.click()
     link.remove()
 
-    window.setTimeout(() => {
-      URL.revokeObjectURL(url)
-    }, 1000)
+    window.setTimeout(() => URL.revokeObjectURL(url), 1000)
 
     setNotice(
       `Exported ${visibleApplications.length} application(s) to CSV.`
@@ -379,18 +426,29 @@ export default function ApplicationsPanel({ onChanged }: Props) {
       )}
 
       {showForm && (
-        <form className="application-form" onSubmit={handleSubmit}>
-          <h3>
-            {editingId ? 'Edit Application' : 'Add Application'}
-          </h3>
+        <form
+          className="application-form"
+          onSubmit={(event) => void handleSubmit(event)}
+        >
+          <h3>{editingId ? 'Edit Application' : 'Add Application'}</h3>
 
-          <label htmlFor="applicationCompany">Company</label>
+          <label htmlFor="applicationCompany">
+            Company
+          </label>
+
           <select
             id="applicationCompany"
-            value={companyId}
-            onChange={(event) => setCompanyId(event.target.value)}
+            value={companyChoice}
+            onChange={(event) =>
+              setCompanyChoice(event.target.value)
+            }
+            disabled={saving}
             required
           >
+            <option value={NEW_COMPANY}>
+              + Add a new company
+            </option>
+
             {companies.map((company) => (
               <option key={company.id} value={company.id}>
                 {company.name}
@@ -398,35 +456,80 @@ export default function ApplicationsPanel({ onChanged }: Props) {
             ))}
           </select>
 
-          <label htmlFor="applicationTitle">Job Title</label>
+          {companyChoice === NEW_COMPANY && (
+            <>
+              <label htmlFor="newApplicationCompany">
+                New Company Name
+              </label>
+
+              <input
+                id="newApplicationCompany"
+                value={newCompanyName}
+                onChange={(event) =>
+                  setNewCompanyName(event.target.value)
+                }
+                placeholder="e.g. BMW Group"
+                maxLength={200}
+                disabled={saving}
+                required
+              />
+
+              <p
+                style={{
+                  color: '#aaa',
+                  fontSize: 12,
+                  margin: '-6px 0 22px',
+                }}
+              >
+                The company will be saved automatically with this
+                application. No separate step needed.
+              </p>
+            </>
+          )}
+
+          <label htmlFor="applicationTitle">
+            Job Title
+          </label>
+
           <input
             id="applicationTitle"
             value={jobTitle}
-            onChange={(event) => setJobTitle(event.target.value)}
+            onChange={(event) =>
+              setJobTitle(event.target.value)
+            }
             placeholder="e.g. Software Development Intern"
             maxLength={200}
+            disabled={saving}
             required
           />
 
           <label htmlFor="applicationUrl">
             Job Posting URL (optional)
           </label>
+
           <input
             id="applicationUrl"
             type="url"
             value={jobUrl}
-            onChange={(event) => setJobUrl(event.target.value)}
+            onChange={(event) =>
+              setJobUrl(event.target.value)
+            }
             placeholder="https://example.com/jobs/123"
             maxLength={2048}
+            disabled={saving}
           />
 
-          <label htmlFor="applicationStatus">Status</label>
+          <label htmlFor="applicationStatus">
+            Status
+          </label>
+
           <select
             id="applicationStatus"
             value={status}
             onChange={(event) =>
               setStatus(event.target.value as Status)
             }
+            disabled={saving}
           >
             {STATUSES.map((value) => (
               <option key={value} value={value}>
@@ -440,6 +543,7 @@ export default function ApplicationsPanel({ onChanged }: Props) {
               <label htmlFor="appliedOn">
                 Applied On (optional)
               </label>
+
               <input
                 id="appliedOn"
                 type="date"
@@ -447,6 +551,7 @@ export default function ApplicationsPanel({ onChanged }: Props) {
                 onChange={(event) =>
                   setAppliedOn(event.target.value)
                 }
+                disabled={saving}
               />
             </div>
 
@@ -454,6 +559,7 @@ export default function ApplicationsPanel({ onChanged }: Props) {
               <label htmlFor="deadlineDate">
                 Deadline (optional)
               </label>
+
               <input
                 id="deadlineDate"
                 type="date"
@@ -461,6 +567,7 @@ export default function ApplicationsPanel({ onChanged }: Props) {
                 onChange={(event) =>
                   setDeadlineDate(event.target.value)
                 }
+                disabled={saving}
               />
             </div>
           </div>
@@ -518,7 +625,9 @@ export default function ApplicationsPanel({ onChanged }: Props) {
           type="button"
           className="export-csv-button"
           onClick={exportCsv}
-          disabled={loading || visibleApplications.length === 0}
+          disabled={
+            loading || visibleApplications.length === 0
+          }
         >
           Export CSV
         </button>
@@ -536,7 +645,7 @@ export default function ApplicationsPanel({ onChanged }: Props) {
       ) : applications.length === 0 ? (
         <div className="application-empty">
           <h3>No applications yet</h3>
-          <p>Add your first job application.</p>
+          <p>Add your first application.</p>
         </div>
       ) : visibleApplications.length === 0 ? (
         <div className="application-empty">
@@ -576,7 +685,9 @@ export default function ApplicationsPanel({ onChanged }: Props) {
                       type="button"
                       className="app-action-button"
                       disabled={busy}
-                      onClick={() => void openForm(application)}
+                      onClick={() =>
+                        void openForm(application)
+                      }
                     >
                       Edit
                     </button>
@@ -585,7 +696,9 @@ export default function ApplicationsPanel({ onChanged }: Props) {
                       type="button"
                       className="app-action-button app-action-button--danger"
                       disabled={busy}
-                      onClick={() => void handleDelete(application)}
+                      onClick={() =>
+                        void handleDelete(application)
+                      }
                     >
                       {deletingId === application.id
                         ? 'Deleting...'

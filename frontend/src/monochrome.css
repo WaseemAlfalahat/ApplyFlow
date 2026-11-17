@@ -1,0 +1,563 @@
+
+/* ==========================================
+   APPLYFLOW — MONOCHROME DESIGN SYSTEM
+   ========================================== */
+
+:root {
+  color-scheme: dark;
+  --mono-black: #090909;
+  --mono-surface: #151515;
+  --mono-card: #1d1d1d;
+  --mono-raised: #242424;
+  --mono-border: #353535;
+  --mono-white: #fafafa;
+  --mono-muted: #a3a3a3;
+
+  color: var(--mono-white);
+  background: var(--mono-black);
+}
+
+body,
+.dashboard-page,
+.auth-main {
+  background: var(--mono-black);
+  color: var(--mono-white);
+}
+
+::selection {
+  color: #000;
+  background: #fff;
+}
+
+/* BRAND & NAVIGATION */
+
+.brand-mark {
+  width: 46px;
+  height: 46px;
+  border-radius: 10px;
+  border: 1px solid #646464;
+  background: #fff url('/applyflow-logo.svg') center / contain no-repeat;
+  color: transparent;
+  font-size: 0;
+  overflow: hidden;
+}
+
+.dashboard-header {
+  background: #0d0d0d;
+  border-bottom: 1px solid #303030;
+}
+
+.dashboard-header .brand {
+  color: #fff;
+  font-weight: 800;
+  letter-spacing: -0.7px;
+}
+
+.account-email,
+.muted {
+  color: #a3a3a3;
+}
+
+.logout-button {
+  background: #202020;
+  border-color: #484848;
+  color: white;
+}
+
+.logout-button:hover {
+  background: #353535;
+}
+
+/* AUTHENTICATION PAGE */
+
+.showcase {
+  background:
+    radial-gradient(circle at 15% 85%, #dedede, transparent 50%),
+    linear-gradient(140deg, #ffffff, #eeeeee);
+  color: #101010;
+  border-right: 1px solid #444;
+}
+
+.showcase .brand,
+.showcase-content h1,
+.showcase-content h1 span {
+  color: #080808;
+}
+
+.showcase-content > p,
+.showcase-footer,
+.showcase .feature-line {
+  color: #383838;
+}
+
+.eyebrow,
+.showcase .eyebrow {
+  color: #a8a8a8;
+}
+
+.showcase .eyebrow {
+  color: #555;
+}
+
+.feature-icon {
+  background: #111;
+  color: #fff;
+}
+
+.auth-tabs {
+  background: #1a1a1a;
+  border: 1px solid #333;
+}
+
+.auth-tabs button {
+  color: #aaa;
+}
+
+.auth-tabs button.active {
+  color: #111;
+  background: #f5f5f5;
+}
+
+.auth-container input,
+.auth-container select {
+  background: #191919;
+  color: #fff;
+  border-color: #414141;
+}
+
+.auth-container input:focus {
+  border-color: #f5f5f5;
+  box-shadow: 0 0 0 3px #ffffff1c;
+}
+
+.password-hint,
+.auth-subtitle,
+.auth-footer,
+.switch-text {
+  color: #aaa;
+}
+
+.switch-text button {
+  color: #fff;
+  text-decoration: underline;
+}
+
+.submit-button {
+  background: #f4f4f4;
+  color: #111;
+  box-shadow: none;
+}
+
+.submit-button:hover {
+  background: #d9d9d9;
+}
+
+.form-error {
+  color: #fff;
+  background: #272727;
+  border: 1px dashed #aaa;
+}
+
+/* DASHBOARD SPOTLIGHT */
+
+.af-hero {
+  background:
+    radial-gradient(circle at 85% 8%, #ffffff16, transparent 42%),
+    linear-gradient(130deg, #232323, #101010 75%);
+  border: 1px solid #565656;
+}
+
+.af-hero::after {
+  border-color: #ffffff24;
+  box-shadow:
+    0 0 0 48px #ffffff08,
+    0 0 0 95px #ffffff04;
+}
+
+.af-hero-label,
+.af-section-eyebrow,
+.af-hero h1 span {
+  color: #fff;
+}
+
+.af-live-dot {
+  background: #fff;
+  box-shadow: 0 0 14px #ffffff70;
+}
+
+.af-hero-date,
+.af-hero-description {
+  color: #bcbcbc;
+}
+
+.af-button-primary {
+  background: #fff;
+  color: #111;
+  box-shadow: 0 8px 25px #ffffff12;
+}
+
+.af-button-primary:hover {
+  background: #dcdcdc;
+}
+
+.af-button-secondary {
+  background: #ffffff08;
+  border: 1px solid #777;
+  color: #fff;
+}
+
+.af-focus-card {
+  background: #080808b8;
+  border-color: #555;
+}
+
+.af-focus-header,
+.af-focus-sparkle,
+.af-focus-number {
+  color: #fff;
+}
+
+.af-focus-card a {
+  color: #c8c8c8;
+  border-top-color: #ffffff20;
+}
+
+.af-focus-card a:hover {
+  color: #fff;
+}
+
+.af-overview-note {
+  color: #aaa;
+}
+
+/* STATISTICS */
+
+.stat-card,
+.next-card,
+.af-stat-card {
+  background: linear-gradient(145deg, #202020, #141414);
+  border: 1px solid #363636;
+}
+
+.af-stat-card {
+  --accent: #f5f5f5;
+}
+
+.af-stat-mint {
+  --accent: #c8c8c8;
+}
+
+.af-stat-rose {
+  --accent: #8c8c8c;
+}
+
+.af-stat-top > span:first-child,
+.stat-card span {
+  color: #b5b5b5;
+}
+
+.af-stat-icon {
+  color: var(--accent);
+  background: #ffffff0d;
+}
+
+.af-stat-card small,
+.stat-card small,
+.next-card p {
+  color: #a5a5a5;
+}
+
+.af-stat-line {
+  background: var(--accent);
+  box-shadow: none;
+}
+
+/* ALL MAIN PANELS */
+
+.deadlines-panel,
+.analytics-panel,
+.applications-panel,
+.companies-panel,
+.notes-panel,
+.application-details-panel {
+  background: #171717;
+  border: 1px solid #353535;
+  box-shadow: 0 8px 30px #00000017;
+}
+
+.deadline-summary-card,
+.deadline-item,
+.deadlines-empty,
+.analytics-highlight,
+.analytics-distribution,
+.application-item,
+.company-item,
+.company-form,
+.application-form,
+.notes-sidebar,
+.notes-main,
+.application-details-form,
+.application-details-preview {
+  background: #101010;
+  border-color: #373737;
+}
+
+.deadline-summary-card:hover,
+.deadline-item:hover,
+.analytics-highlight:hover,
+.application-item:hover,
+.company-item:hover {
+  border-color: #757575;
+}
+
+/* ALL INPUTS */
+
+.application-form input,
+.application-form select,
+.application-toolbar input,
+.application-toolbar select,
+.company-form input,
+.notes-editor input,
+.notes-editor select,
+.notes-editor textarea,
+.application-details-panel input,
+.application-details-panel select,
+.application-details-panel textarea {
+  background: #222;
+  color: #f5f5f5;
+  border-color: #484848;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: #858585;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  border-color: #fff;
+}
+
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+a:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 3px;
+}
+
+/* PRIMARY BUTTONS */
+
+.add-company-button,
+.notes-primary-button,
+.export-csv-button,
+.app-action-button,
+.edit-company-button,
+.delete-company-button,
+.notes-secondary-button {
+  background: #272727;
+  color: #fff;
+  border: 1px solid #555;
+  box-shadow: none;
+}
+
+.add-company-button,
+.notes-primary-button {
+  background: #fff;
+  color: #111;
+  border-color: #fff;
+}
+
+.add-company-button:hover,
+.notes-primary-button:hover {
+  background: #dcdcdc;
+}
+
+.export-csv-button:hover,
+.app-action-button:hover,
+.edit-company-button:hover,
+.delete-company-button:hover,
+.notes-secondary-button:hover {
+  background: #393939;
+  color: #fff;
+}
+
+/* APPLICATION STATUS BADGES */
+
+.application-status,
+.status-applied,
+.status-screening,
+.status-interview,
+.status-offer,
+.status-rejected,
+.status-withdrawn {
+  color: #f5f5f5;
+  background: #292929;
+  border: 1px solid #505050;
+}
+
+.status-interview,
+.status-offer {
+  background: #454545;
+  border-color: #999;
+}
+
+.status-rejected {
+  background: #171717;
+  border-style: dashed;
+}
+
+/* ANALYTICS & PROGRESS */
+
+.analytics-total,
+.notes-sidebar-heading span {
+  background: #303030;
+  color: #fff;
+}
+
+.analytics-progress,
+.analytics-progress::-webkit-progress-bar {
+  background: #292929;
+}
+
+.analytics-progress--draft {
+  --bar-color: #888;
+}
+
+.analytics-progress--applied {
+  --bar-color: #e5e5e5;
+}
+
+.analytics-progress--screening {
+  --bar-color: #bcbcbc;
+}
+
+.analytics-progress--interview {
+  --bar-color: #fff;
+}
+
+.analytics-progress--offer {
+  --bar-color: #dedede;
+}
+
+.analytics-progress--rejected {
+  --bar-color: #707070;
+}
+
+.analytics-progress--withdrawn {
+  --bar-color: #555;
+}
+
+/* NOTES & CONTACTS */
+
+.notes-list-item,
+.notes-info-card,
+.notes-body,
+.detail-card,
+.detail-notes-card {
+  background: #242424;
+  border-color: #404040;
+}
+
+.notes-list-item:hover {
+  border-color: #aaa;
+}
+
+.notes-list-item-active {
+  background: #333;
+  border-color: #fff;
+}
+
+.notes-list-company,
+.notes-eyebrow,
+.notes-info-card a {
+  color: #f1f1f1;
+}
+
+.notes-list-date,
+.notes-list-preview {
+  color: #b7b7b7;
+}
+
+.notes-success,
+.company-notice,
+.connected {
+  color: #fff;
+}
+
+.status-dot {
+  background: #fff;
+}
+
+.company-avatar {
+  background: #ebebeb;
+  color: #111;
+}
+
+/* DEADLINES */
+
+.deadline-label-danger,
+.deadline-label-soon,
+.deadlines-empty-icon {
+  color: #f5f5f5;
+}
+
+/* MUTED SECONDARY INFORMATION */
+
+.deadlines-heading p,
+.deadline-item-info p,
+.deadlines-footnote,
+.analytics-heading p,
+.analytics-distribution > p,
+.analytics-footnote,
+.application-meta,
+.application-card-top p,
+.companies-heading p,
+.notes-heading p,
+.notes-detail-heading p,
+.company-details p,
+.company-details small {
+  color: #a5a5a5;
+}
+
+.application-link {
+  color: #f5f5f5;
+  text-decoration: underline;
+}
+
+/* INTERACTION */
+
+button,
+a {
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease,
+    border-color 0.2s ease,
+    transform 0.2s ease;
+}
+
+button:not(:disabled) {
+  cursor: pointer;
+}
+
+/* RESPONSIVE */
+
+@media (max-width: 650px) {
+  .dashboard-header {
+    padding: 16px;
+  }
+
+  .brand-mark {
+    width: 40px;
+    height: 40px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  button,
+  a {
+    transition: none;
+  }
+}
